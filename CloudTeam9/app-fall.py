@@ -7,11 +7,12 @@ app = Flask(__name__)
 def index():
     index_html = """<form method="post" enctype="multipart/form-data" action="/upload">
                         <div>
-                            <label for="file">Choose file to upload</label>
-                            <input type="file" id="file" name="form_file" accept="image/jpeg"/>
+                            <label for="file" style="color:blue; font-size:50px;">Welcome to Cloud 9</label><br><br>
+                            <label for"file" style="color:red; font-size:20px;">Hello User!! Upload your file below</label><br>
+                            <input type="file" id="file" name="form_file" accept="image/jpeg"/><br><br>
                         </div>
                         <div>
-                            <button>Submit</button>
+                            <button style="height:20px;width:100px">Submit</button>
                         </div>
                     </form>
                     <ul>
@@ -44,7 +45,7 @@ def display_image(filename):
 
 @app.route('/delete/<filename>')
 def delete_file(filename):
-    #For security so people can't just delete any path, only in this folder
+    #For security so people can't just delete any path, only in this file path
     if "/" in filename or ".." in filename:
         return "Invalid filename", 400
     os.remove(os.path.join("./files", filename))
