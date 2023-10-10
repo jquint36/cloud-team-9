@@ -12,7 +12,7 @@ def list_db_entries(key):
 
 def add_db_entry(object, key):
     # Create an entity key with the specified kind
-    entity_key = datastore_client.key(key)#, key+"|"+object['Name'])
+    entity_key = datastore_client.key(key, key+"|"+object['Name'])
 
     # Create a new entity with the given key
     entity = datastore.Entity(key=entity_key)
@@ -98,5 +98,3 @@ def download_file(bucket_name, file_name):
     blob.reload()
     
     return
-
-print(fetch_db_entry({'Name': 'cat3.jpg', 'ResolutionUnit': '2', 'ImageDescription': 'SONY DSC', 'YCbCrPositioning': '1', 'XResolution': '72.0', 'YResolution': '72.0'}, 'testing12312312312312312'))

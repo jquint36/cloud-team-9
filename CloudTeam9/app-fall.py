@@ -82,7 +82,7 @@ def upload():
     blob_size = storage.upload_file(key, file.filename,file)
     
     obj["blob_size"] = blob_size
-    
+    obj["key"] = key
     obj["Location"] = f"https://storage.cloud.google.com/{key}/{file.filename}"
     
     storage.add_db_entry(obj,key)
