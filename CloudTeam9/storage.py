@@ -4,19 +4,29 @@ from google.cloud import datastore, storage
 datastore_client = datastore.Client()
 storage_client = storage.Client()
 
-def list_db_entries():
-    query = datastore_client.query(kind="photos")
+def list_db_entries(key):
+    query = datastore_client.query(kind=key)
     
     for photo in query.fetch():
         print(photo.items())
 
-def add_db_entry(object):
-    entity = datastore.Entity(key=datastore_client.key("photos"))
+def add_db_entry(object, key):
+    # Create an entity key with the specified kind
+    entity_key = datastore_client.key(key)#, key+"|"+object['Name'])
+
+    # Create a new entity with the given key
+    entity = datastore.Entity(key=entity_key)
+
+    # Update the entity with the provided data
     entity.update(object)
 
-def fetch_db_entry(object):
+    # Save the entity to Datastore
+    datastore_client.put(entity)
+    print("updated")
+
+def fetch_db_entry(object,key):
     
-    query = datastore_client.query(kind="photos")
+    query = datastore_client.query(kind=key)
     
     for attr in object.keys():
         query.add_filter(attr, "=", object[attr])
@@ -28,24 +38,56 @@ def fetch_db_entry(object):
 def get_list_of_files(bucket_name):
     print("get_list_of_files: "+bucket_name)
     
-    blobs = storage_client.list_blobs(bucket_name)
-    print(blobs)
-    files = []
-    for blob in blobs:
-        files.append(blob.name)
-    
-    return files
+    try:
+        bucket = storage_client.create_bucket(bucket_name)
+
+    except:
+        print("BUCKET ALREADY EXISTS")
+
+    try:
+        
+        blobs = storage_client.list_blobs(bucket_name)
+        print(blobs)
+        files = []
+        for blob in blobs:
+            files.append(blob.name)
+        
+        return files
+    except:
+        return
 
 # Send file to bucket
 def upload_file(bucket_name, file_name, file_data):
     print("upload_file: " + bucket_name + "/" + file_name)
     
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(file_name)
+    try:
+        bucket = storage_client.create_bucket(bucket_name)
+
+    except:
+        print("BUCKET ALREADY EXISTS")
+
+    try:
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(file_name)
+        file_data.seek(0)
+        # Upload the file data directly instead of specifying a local file path
+        blob.upload_from_file(file_data)
+        
+        return blob.size
+    except:
+        print("BUCKET NOT ACCESSABLE")
+    return
     
-    file_data.seek(0)
-    # Upload the file data directly instead of specifying a local file path
-    blob.upload_from_file(file_data)
+def delete_file(bucket_name, file_name):
+    print("delete_file: " + bucket_name + "/" + file_name)
+
+    try:
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(file_name)
+        blob.delete()
+    except:
+        print("BUCKET NOT ACCESSABLE")
+    return
 
 def download_file(bucket_name, file_name):
     print("download_file: "+bucket_name+"/"+file_name)
@@ -57,18 +99,4 @@ def download_file(bucket_name, file_name):
     
     return
 
-#print(get_list_of_files("testkey1"))
-
-
-try:
-    bucket = storage_client.create_bucket("testing12312312312312312")
-
-except:
-    print("BUCKET ALREADY EXISTS")
-
-try:
-    print(storage_client.get_bucket("testing12312312312312312"))
-    blob = bucket.blob("test1")
-    print(blob)
-except:
-    print("BUCKET NOT ACCESSABLE")
+print(fetch_db_entry({'Name': 'cat3.jpg', 'ResolutionUnit': '2', 'ImageDescription': 'SONY DSC', 'YCbCrPositioning': '1', 'XResolution': '72.0', 'YResolution': '72.0'}, 'testing12312312312312312'))
